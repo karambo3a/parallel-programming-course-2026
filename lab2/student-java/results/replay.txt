@@ -1,0 +1,204 @@
+
+$ ./lab2 withdraw-v0 first log
+  A  balance -> 100
+  A  window
+  A  balance -> 100
+  A  balance = 0
+  B  balance -> 0
+  B  window
+schedule AAAB -> ok
+
+$ ./lab2 withdraw-v1 first log
+  A  lock mu
+  A  unlock mu
+  A  window
+  A  lock mu
+  A  unlock mu
+  B  lock mu
+  B  unlock mu
+  B  window
+schedule AAAABB -> ok
+
+$ ./lab2 transfer first
+schedule AAAABBBB -> ok
+
+$ ./lab2 transfer replay AB log
+  A  lock a
+  A  window
+  B  lock b
+  B  window
+schedule AB -> DEADLOCK held={a:A, b:B}
+
+$ ./lab2 withdraw-v1 randoms 1000
+random: 1000 seeds, 501 fail (50.1%)
+first failing seed 0: BBAABBAA -> OVERDRAFT balance=-100 results=true,true
+replay BBAABBAA: same failure 10/10
+
+./lab2 withdraw-v1 replay BBAABBAA log
+  B  lock mu
+  B  unlock mu
+  B  window
+  A  lock mu
+  A  unlock mu
+  A  window
+  B  lock mu
+  B  unlock mu
+  A  lock mu
+  A  unlock mu
+schedule BBAABBAA -> OVERDRAFT balance=-100 results=true,true
+
+
+$ ./lab2 withdraw-v1 dfs
+explored 6 schedules, 4 fail  (0.02 s)
+first failing: AABBAABB -> OVERDRAFT balance=-100 results=true,true
+
+./lab2 withdraw-v1 replay AABBAABB log
+  A  lock mu
+  A  unlock mu
+  A  window
+  B  lock mu
+  B  unlock mu
+  B  window
+  A  lock mu
+  A  unlock mu
+  B  lock mu
+  B  unlock mu
+schedule AABBAABB -> OVERDRAFT balance=-100 results=true,true
+
+
+$ ./lab2 withdraw-v2 dfs
+explored 2 schedules, 0 fail  (0.02 s)
+
+
+
+$ ./lab2 withdraw-v0 dfs
+explored 20 schedules, 18 fail  (0.02 s)
+first failing: AABABB -> OVERDRAFT balance=-100 results=true,true
+
+./lab2 withdraw-v0 replay AABABB log
+  A  balance -> 100
+  A  window
+  A  balance -> 100
+  B  balance -> 100
+  B  window
+  A  balance = 0
+  B  balance -> 0
+  B  balance = -100
+schedule AABABB -> OVERDRAFT balance=-100 results=true,true
+
+
+$ ./lab2 transfer dfs
+explored 6 schedules, 2 fail  (0.01 s)
+first failing: AB -> DEADLOCK held={a:A, b:B}
+
+./lab2 transfer replay AB log
+  A  lock a
+  A  window
+  B  lock b
+  B  window
+schedule AB -> DEADLOCK held={a:A, b:B}
+$ ./lab2 withdraw-v1 bounded 0
+explored 2 schedules, 0 fail  (0.02 s)
+
+$ ./lab2 withdraw-v1 bounded 1
+explored 4 schedules, 2 fail  (0.02 s)
+first failing: AABBBBAA -> OVERDRAFT balance=-100 results=true,true
+
+./lab2 withdraw-v1 replay AABBBBAA log
+  A  lock mu
+  A  unlock mu
+  A  window
+  B  lock mu
+  B  unlock mu
+  B  window
+  B  lock mu
+  B  unlock mu
+  A  lock mu
+  A  unlock mu
+schedule AABBBBAA -> OVERDRAFT balance=-100 results=true,true
+
+
+$ ./lab2 withdraw-v1 bounded 2
+explored 6 schedules, 4 fail  (0.02 s)
+first failing: AABBAABB -> OVERDRAFT balance=-100 results=true,true
+
+./lab2 withdraw-v1 replay AABBAABB log
+  A  lock mu
+  A  unlock mu
+  A  window
+  B  lock mu
+  B  unlock mu
+  B  window
+  A  lock mu
+  A  unlock mu
+  B  lock mu
+  B  unlock mu
+schedule AABBAABB -> OVERDRAFT balance=-100 results=true,true
+
+
+$ ./lab2 transfer bounded 0
+explored 2 schedules, 0 fail  (0.01 s)
+
+$ ./lab2 transfer bounded 1
+explored 6 schedules, 2 fail  (0.01 s)
+first failing: AB -> DEADLOCK held={a:A, b:B}
+
+./lab2 transfer replay AB log
+  A  lock a
+  A  window
+  B  lock b
+  B  window
+schedule AB -> DEADLOCK held={a:A, b:B}
+
+$ ./lab2 collector-nostep3-1x1 dfs
+explored 106 schedules, 12 fail  (0.05 s)
+first failing: ABBBAABAAB -> LOST 1 record(s): counted 0 of 1
+
+./lab2 collector-nostep3-1x1 replay ABBBAABAAB log
+  A  active -> 0
+  B  active -> 0
+  B  active = 1
+  B  await done
+  A  inside[W1] = 0
+  A  cnt[W1][0] -> 0
+  B  cnt[W1][0] -> 0
+  A  cnt[W1][0] = 1
+  A  inside[W1] = -1
+  B  cnt[W1][0] = 0
+schedule ABBBAABAAB -> LOST 1 record(s): counted 0 of 1
+
+./lab2 collector-nostep3-1x2 dfs
+explored 1666 schedules, 105 fail  (0.39 s)
+first failing: AAAAAABBBAABAAB -> LOST 1 record(s): counted 1 of 2
+
+./lab2 collector-nostep3-1x3 dfs
+explored 9931 schedules, 348 fail  (2.36 s)
+first failing: AAAAAAAAAAABBBAABAAB -> LOST 1 record(s): counted 2 of 3
+
+./lab2 collector-nostep3-1x4 dfs
+explored 37151 schedules, 816 fail  (10.28 s)
+first failing: AAAAAAAAAAAAAAAABBBAABAAB -> LOST 1 record(s): counted 3 of 4
+
+
+$ ./lab2 collector-nostep3-2x1 bounded 0
+explored 6 schedules, 0 fail  (0.02 s)
+
+$ ./lab2 collector-nostep3-2x1 bounded 1
+explored 102 schedules, 0 fail  (0.06 s)
+
+$ ./lab2 collector-nostep3-2x1 bounded 2
+explored 945 schedules, 10 fail  (0.31 s)
+first failing: AAAAABCCCCCCCBBBBC -> LOST 1 record(s): counted 1 of 2
+
+$ ./lab2 collector-nostep3-2x1 bounded 3
+explored 5814 schedules, 108 fail  (1.58 s)
+first failing: AAAAABCCCCCCCBBBBC -> LOST 1 record(s): counted 1 of 2
+
+$ ./lab2 collector-plain-1x1 dfs
+explored 29 schedules, 0 fail  (0.02 s)
+
+$ ./lab2 collector-acqrel-1x1 dfs
+explored 636 schedules, 0 fail  (0.17 s)
+
+$ ./lab2 collector-ok-1x1 dfs
+explored 636 schedules, 0 fail  (0.17 s)

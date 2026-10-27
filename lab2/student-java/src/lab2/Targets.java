@@ -143,6 +143,7 @@ public final class Targets {
             if (acqrel) inside.get(w).setRelease(v); else inside.get(w).set(v);
         }
 
+        // запись
         void record(int w) {
             int b;
             while (true) {
@@ -156,6 +157,7 @@ public final class Targets {
             setInside(w, -1);
         }
 
+        // чтение
         void snapshot() {
             int old = active.get();
             active.set(1 - old);
